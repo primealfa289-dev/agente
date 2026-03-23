@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "primealfa289@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidContact(data) {
+      return data.phoneNumber is string && data.phoneNumber.size() > 0 && data.phoneNumber.size() < 20 &&
+             data.addedAt is timestamp &&
+             data.createdBy == request.auth.uid;
+    }
+
+    function isValidSettings(data) {
+      return data.isActive is bool &&
+             data.systemPrompt is string && data.systemPrompt.size() < 5000 &&
+             data.updatedAt is timestamp;
+    }
+
+    // Automated Contacts
+    match /automated_contacts/{contactId} {
+      allow read: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+      allow create: if isAuthenticated() && isValidContact(request.resource.data);
+      allow update: if isAuthenticated() && resource.data.createdBy == request.auth.uid && isValidContact(request.resource.data);
+      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+    }
+
+    // Agent Settings
+    match /agent_settings/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && isValidSettings(request.resource.data);
+    }
+  }
+}

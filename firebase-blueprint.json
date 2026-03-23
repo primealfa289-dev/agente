@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "AutomatedContact": {
+      "title": "Automated Contact",
+      "description": "A contact that the AI agent will automatically respond to.",
+      "type": "object",
+      "properties": {
+        "phoneNumber": {
+          "type": "string",
+          "description": "The phone number of the contact (e.g., 5511999999999)."
+        },
+        "addedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the contact was added to the automation list."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "The UID of the user who added this contact."
+        }
+      },
+      "required": ["phoneNumber", "addedAt", "createdBy"]
+    },
+    "AgentSettings": {
+      "title": "Agent Settings",
+      "description": "Configuration for the AI agent.",
+      "type": "object",
+      "properties": {
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether the agent is currently responding to messages."
+        },
+        "systemPrompt": {
+          "type": "string",
+          "description": "The instructions for the AI agent."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the settings were last updated."
+        }
+      },
+      "required": ["isActive", "systemPrompt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/automated_contacts/{contactId}": {
+      "schema": "AutomatedContact",
+      "description": "List of phone numbers to automate."
+    },
+    "/agent_settings/{userId}": {
+      "schema": "AgentSettings",
+      "description": "User-specific settings for the AI agent."
+    }
+  }
+}
